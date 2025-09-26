@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Color of the Day</title>
+<style>
+body { font-family: Arial, sans-serif; text-align: center; margin: 20px; background: #f5f5f5; }
+h1 { color: #333; }
+#todayColor { font-size: 24px; margin: 15px 0; }
+#gallery img { width: 150px; height: 150px; margin: 5px; border: 3px solid #555; border-radius: 10px; }
+#map { height: 400px; margin-top: 20px; border: 2px solid #555; border-radius: 10px; }
+button { padding: 5px 10px; cursor: pointer; }
+input { padding: 5px; margin: 5px; }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+</head>
+<body>
+
+<h1>🌈 Color of the Day</h1>
+<h2 id="todayColor">Today's color: <span id="colorName">Red</span></h2>
+
+<p>Share your photo representing today's color!</p>
+<p>Upload your photo on <a href="https://imgur.com/upload" target="_blank">Imgur</a> and paste the link here:</p>
+
+<form id="imageForm">
+<input type="text" id="imageLink" placeholder="Paste image link here" size="50">
+<input type="text" id="location" placeholder="City or Country">
+<button type="submit">Submit Photo</button>
+</form>
+
+<div id="gallery"></div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+// توليد لون جديد تلقائيًا كل يوم
+const colors = ["Red","Blue","Green","Yellow","Purple","Orange","Pink","Cyan"];
+const today = new Date();
+const colorIndex = today.getDate() % colors.length;
+document.getElementById("colorName").textContent = colors[colorIndex];
+document.getElementById("colorName").style.color = colors[colorIndex].toLowerCase();
+
+// معرض الصور
+const gallery = document.getElementById('gallery');
+const images = [];
+
+document.getElementById('imageForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const link = document.getElementById('imageLink').value;
+    const loc = document.getElementById('location').value;
+    if(link && loc){
+        images.push({link: link, location: loc});
+        const img = document.createElement('img');
+        img.src = link;
+        gallery.appendChild(img);
+        document.getElementById('imageLink').value = '';
+        document.getElementById('location').value = '';
+        addMarkerToMap(loc, link);
+    }
+});
+
+// خريطة تفاعلية
+const map = L.map('map').setView([20,0], 2);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// تحويل الاسم الجغرافي إلى إحداثيات تقريبية
+function addMarkerToMap(location, imgLink){
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${location}`)
+    .then(res => res.json())
+    .then(data => {
+        if(data && data.length > 0){
+            const lat = data[0].lat;
+            const lon = data[0].lon;
+            const marker = L.marker([lat, lon]).addTo(map);
+            marker.bindPopup(`<img src="${imgLink}" width="100">`);
+        }
+    });
+}
+</script>
+
+</body>
+</html>
