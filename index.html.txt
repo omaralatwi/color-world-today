@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Color of the Day</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 20px; }
+    #preview { max-width: 300px; margin-top: 10px; }
+    input, button { margin-top: 10px; }
+  </style>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js"></script>
+</head>
+<body>
+
+<h1>🌈 Color of the Day</h1>
+<p>Today's color: <span id="colorName">Green</span></p>
+
+<input type="file" id="fileInput" accept="image/*" />
+<button onclick="uploadImage()">Upload Photo</button>
+
+<img id="preview" src="" alt="Image preview">
+
+<script>
+  // Firebase Config (استبدل القيم بالقيم الخاصة بمشروعك)
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const storage = firebase.storage();
+
+  function uploadImage() {
+    const file = document.getElementById("fileInput").files[0];
+    if (!file) { alert("Please select a file!"); return; }
+
+    const storageRef = storage.ref('images/' + file.name);
+    storageRef.put(file).then(() => {
+      alert("Image uploaded successfully!");
+      storageRef.getDownloadURL().then((url) => {
+        document.getElementById("preview").src = url;
+      });
+    }).catch((err) => alert("Upload failed: " + err));
+  }
+</script>
+
+</body>
+</html>
